@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates an AWS budget and notifies you when you exceed thresholds.
+Parameters:
+  Email:
+    Description: The email address to receive notifications
+    Type: String
+Resources:
+  RemoverLambdaPolicy:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Ability to deploy cloudformation stack
+      Policies:
+        - PolicyName: main
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Effect: Allow
+              Action: "cloudformation:UpdateStack"
+              Resource: "arn:aws:cloudformation:*:*:stack/*/*"
+      RoleName: RemoverLambdaRole
+  RemoverLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.14
+      Role: RemoverLambdaPolicy
+      Handler: cost_cleanup.cleanup.cleanup
+      Role: arn:aws:iam::061100493583:group/Project-Admins
+      CodeUri: cost_cleanup/
+  Budget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: New account budget
+        BudgetLimit:
+          Amount: 50
+          Unit: USD
+        TimeUnit: MONTHLY
+        BudgetType: COST
+      # "A budget can have up to five notifications. Each notification must have at least one subscriber.
+      # A notification can have one SNS subscriber and up to ten email subscribers, for a total of 11 subscribers."
+      NotificationsWithSubscribers:
+        - Notification:
+            ComparisonOperator: GREATER_THAN
+            NotificationType: ACTUAL
+            Threshold: 40
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref Email
+        - Notification:
+            ComparisonOperator: GREATER_THAN
+            NotificationType: ACTUAL
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref Email
+          # TODO: lambda subscription for this one to turn off services

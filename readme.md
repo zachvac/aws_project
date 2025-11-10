@@ -11,8 +11,17 @@
 - Cloud Formation
 - Billing
 5. Turn billing IAM on in root account
+6. Set up local to point to new user
 
 TODO: Once comfortable with additional accesses, put policy in this repo
 
 
-# Create budget alert #
+# TODO #
+- Finish up cleanup lambda, will ensure that if costs go up, resources will be spun down
+- Add lambda cleanup to alert, might require SNS topic
+
+# Next Projects #
+- Web site to show this stuff off
+- Github Actions integration, web site updating with merges to main
+- Potential fantasy football stuff
+- Potential consolidator example
